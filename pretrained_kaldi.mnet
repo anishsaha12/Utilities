@@ -1,0 +1,7 @@
+affine n ./orig_tf_nnet/layer_0.wts ./orig_tf_nnet/layer_0.bss linear
+affine t ./orig_tf_nnet/layer_1.wts ./orig_tf_nnet/layer_1.bss sigmoid
+affine t ./orig_tf_nnet/layer_2.wts ./orig_tf_nnet/layer_2.bss sigmoid
+affine t ./orig_tf_nnet/layer_3.wts ./orig_tf_nnet/layer_3.bss sigmoid
+affine t ./orig_tf_nnet/layer_4.wts ./orig_tf_nnet/layer_4.bss sigmoid
+affine t ./orig_tf_nnet/layer_5.wts ./orig_tf_nnet/layer_5.bss sigmoid
+affine t ./orig_tf_nnet/layer_6.wts ./orig_tf_nnet/layer_6.bss softmax
