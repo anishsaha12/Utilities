@@ -30,7 +30,7 @@ for epoch in range(num_epochs):
        lr_value = lr_list[-1] / 1.5;
     lr_list.append(max(lr_value, final_lr));
 
-### Load my network
+### Load my network from file
 mnet_lines = [line.rstrip() for line in open(in_mnet)];
 mnet_wts = list();
 mnet_bss = list();
