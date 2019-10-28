@@ -30,7 +30,7 @@ for epoch in range(num_epochs):
        lr_value = lr_list[-1] / 1.5;
     lr_list.append(max(lr_value, final_lr));
 
-### Load my network from file
+### Load my network
 mnet_lines = [line.rstrip() for line in open(in_mnet)];
 mnet_wts = list();
 mnet_bss = list();
@@ -96,6 +96,17 @@ def error(pred, real):
     loss = np.sum(logp)/n_samples
     return loss
 
+res = list()
+def get_acc(x, y):
+    acc = 0
+    for xx,yy in zip(x, y):
+        s = model.predict(xx.reshape(1,-1)).argmax()
+        res.append(s)
+        if s == np.argmax(yy):
+            acc +=1
+    # print('\n',res,'\n')
+    return acc/len(x)*100
+    
 class MyNN:
     def __init__(self, x, y):
         self.x = x
@@ -144,8 +155,6 @@ class MyNN:
         self.a7 = softmax(z7)
         
     def backprop(self):
-        loss = error(self.a7, self.y)
-        print('Error :', loss)
         a7_delta = cross_entropy(self.a7, self.y) # w7
 
         z6_delta = np.dot(a7_delta, self.w7.T)
@@ -208,27 +217,84 @@ class MyNN:
         # print(np.sum(a2_delta, axis=0))
 
     def predict(self, data):
-        self.x = data
-        self.feedforward()
-        return self.a3.argmax()
+        # self.x = data
+        # self.feedforward()
+        z1 = np.dot(data, self.w1) + self.b1
+        t_a1 = z1
+        z2 = np.dot(t_a1, self.w2) + self.b2
+        t_a2 = sigmoid(z2)
+        z3 = np.dot(t_a2, self.w3) + self.b3
+        t_a3 = sigmoid(z3)
+        z4 = np.dot(t_a3, self.w4) + self.b4
+        t_a4 = sigmoid(z4)
+        z5 = np.dot(t_a4, self.w5) + self.b5
+        t_a5 = sigmoid(z5)
+        z6 = np.dot(t_a5, self.w6) + self.b6
+        t_a6 = sigmoid(z6)
+        z7 = np.dot(t_a6, self.w7) + self.b7
+        t_a7 = softmax(z7)
+
+        # return t_a7.argmax() # to return class label
+        return t_a7
             
 size = 300
-model = MyNN(x_train[range(size),:], np.array(y_train[range(size),:]))
+X = x_train[range(size),:]
+Y = y_train[range(size),:]
 
-epochs = 10
+msk = np.random.rand(size) < 0.8
+train_x_split = X[msk,:]
+train_y_split = Y[msk,:]
+test_x_split = X[~msk,:]
+test_y_split = Y[~msk,:]
+
+
+model = MyNN(train_x_split, np.array(train_y_split))
+# model = MyNN(x_train[range(size),:], np.array(y_train[range(size),:]))
+
+loss_history = dict()
+acc_history = dict()
+loss_history['train'] = list()
+acc_history['train'] = list()
+loss_history['test'] = list()
+acc_history['test'] = list()
+
+# epochs = 1
+epochs = 6
 for x in range(epochs):
     model.feedforward()
+    loss_train = error(model.a7, model.y)
+    acc_train = get_acc(model.x, model.y)
+    print('Error :', loss_train)
+    print("Accuracy :", acc_train)
+    loss_history['train'].append(loss_train)
+    acc_history['train'].append(acc_train)
+
+    loss_test = error(model.predict(test_x_split), test_y_split)
+    acc_test = get_acc(test_x_split, test_y_split)
+    loss_history['test'].append(loss_test)
+    acc_history['test'].append(acc_test)
+
     model.backprop()
-        
-# res = list()
-# def get_acc(x, y):
-#     acc = 0
-#     for xx,yy in zip(x, y):
-#         s = model.predict(xx)
-#         res.append(s)
-#         if s == np.argmax(yy):
-#             acc +=1
-#     print('\n',res,'\n')
-#     return acc/len(x)*100
+
+
+import matplotlib.pyplot as plt
+def plot_loss_accuracy():
+    # summarize history for  loss
+    plt.plot(loss_history['train'])
+    plt.plot(loss_history['test'])
+    plt.title('model loss')
+    plt.ylabel('loss')
+    plt.xlabel('epoch')
+    plt.legend(['train', 'test'], loc='upper left')
+    plt.show()
+
+    # summarize history for accuracy
+    plt.plot(acc_history['train'])
+    plt.plot(acc_history['test'])
+    plt.title('model accuracy')
+    plt.ylabel('accuracy')
+    plt.xlabel('epoch')
+    plt.legend(['train', 'test'], loc='upper left')
+    plt.show()
     
-# print("Training accuracy : ", get_acc(x_train[range(1),:], np.array(y_train[range(1),:])))
+plot_loss_accuracy()
